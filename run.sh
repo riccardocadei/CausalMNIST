@@ -7,7 +7,7 @@
 #
 #SBATCH --job-name=PPCI_test        # Job name
 #SBATCH --output=logs/PPCI_%j.log   # Output file
-#SBATCH --time=04:00:00             # Maximum walltime
+#SBATCH --time=06:00:00             # Maximum walltime
 #SBATCH --ntasks=1                  # Number of tasks
 #SBATCH --mem=10G                   # Memory allocation
 #SBATCH --partition=gpu100          # Partition to use (e.g., gpu)
@@ -21,7 +21,8 @@ conda activate crl                  # Activate your conda environment
 
 # Run experiments, general variables
 epochs=30
-seeds=20
+seeds=10
+env=3
 
 # Generalization
 pU=0.02
@@ -34,7 +35,7 @@ pU=0.02
 # seeing Z well and some Y 
 pW=0.5
 # srun python ./src/run_gen.py --pW ${pW} --pU ${pU} --exp OS --epochs ${epochs} --seeds ${seeds}
-srun python ./src/run_gen.py --pW ${pW} --pU ${pU} --exp RCT --epochs ${epochs} --seeds ${seeds}
+srun python ./src/run_gen.py --pW ${pW} --pU ${pU} --exp RCT --epochs ${epochs} --seeds ${seeds} --e ${env}
 
 # # seeing the most of Y, but Z bad
 # pW=0.8

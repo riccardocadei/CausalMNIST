@@ -106,8 +106,8 @@ class CausalMNIST(datasets.VisionDataset):
     return len(self.data_label_tuples)
 
   def prepare_colored_mnist(self, N=10000, pW=0.5, pU=0.9, e=1, exp='OS', seed=0):
-    if e not in [1, 2]:
-      raise ValueError('exp must be either 1 or 2')
+    if e not in [1, 2, 3]:
+      raise ValueError('exp must be either 1 or 2 or 3')
     causal_mnist_dir = os.path.join(self.root, 'CausalMNIST')
     if os.path.exists(os.path.join(causal_mnist_dir, str(e), str(pW), str(pU), str(seed), f'{exp}.pt')) \
         and not self.force_generation:
@@ -128,9 +128,12 @@ class CausalMNIST(datasets.VisionDataset):
       # RCT
       T = np.random.binomial(1, 0.5, N)
       if e == 1:
-        Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N)*T +np.random.randint(4, size=N)*U).astype(int) # ATE=2.5
+        Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N)*T +np.random.randint(4, size=N)*U).astype(int) # ATE=1.5
       elif e == 2:
         Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N) +np.random.randint(4, size=N)*U).astype(int) # ATE=0
+      elif e == 3:
+        Y = (np.random.randint(4, size=N)*np.logical_or(U, T).astype(int) +np.random.randint(7, size=N)).astype(int) # ATE=...
+        print(np.unique(Y, return_counts=True))
       dataset = []
       for digit in range(10):
           idxs = np.where(Y==digit)[0]
@@ -152,9 +155,12 @@ class CausalMNIST(datasets.VisionDataset):
       # OS
       T = np.random.binomial(1, 0.1, N)*(1-W)+np.random.binomial(1, 0.9, N)*W
       if e == 1:
-        Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N)*T +np.random.randint(4, size=N)*U).astype(int) # ATE=2.5
+        Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N)*T +np.random.randint(4, size=N)*U).astype(int) # ATE=1.5
       elif e == 2:
         Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N) +np.random.randint(4, size=N)*U).astype(int) # ATE=0
+      elif e == 3:
+        Y = (np.random.randint(4, size=N)*np.logical_or(U, T).astype(int) +np.random.randint(7, size=N)).astype(int) # ATE=...
+        print(np.unique(Y, return_counts=True))
       dataset = []
       for digit in range(10):
           idxs = np.where(Y==digit)[0]

@@ -31,7 +31,7 @@ def get_parser():
 
 def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    methods = [("DERM", None), ('ERM', None), ("UCRL", 0.1)]#("CURL", 0.1), ("CURL", 10), ("UCRL", 0.1), ("UCRL", 10), ("CURL+", 0.1), ("CURL+", 10)]
+    methods = [("DERM", None), ('ERM', None), ("vREx", 0.1), ("IRM", 0.1)]
     results = pd.DataFrame(columns=["target", "method", "seed", "acc", "bacc", "AD", "PPAIPW_OC", "AIPW_OC", "PPAIPW_UC", "AIPW_UC", "ATE"])
     i = 0
     target_names = ["RT","RV","T1","T2","T3"]
@@ -40,6 +40,10 @@ def main(args):
 
     colors = ['lightgray', 'red', 'yellow', 'green']  # Modify colors as desired
     custom_cmap = LinearSegmentedColormap.from_list('custom_gray_to_color', colors)
+    e_ref = 1
+    e_tar = args.e
+    p_extreme = 0.2 # 0.05
+    p_average = 0.5 # 0.5
     for method, k_inv in methods:
         for seed in range(args.seeds):
             t = time.time()-t0
@@ -47,7 +51,7 @@ def main(args):
             print(f"Training {int(i/len(target_names)+1)}/{N_i} {t//60:.0f}m{t%60:.0f}s/{T//60:.0f}m{T%60:.0f}s (Method: {method}, K_inv: {k_inv}, Seed: {seed})")
             reference = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=args.e,
+                                e=e_ref,
                                 pW=args.pW,
                                 pU=args.pU,
                                 exp=args.exp,
@@ -72,12 +76,11 @@ def main(args):
                 print(f"Training failed for {method} (k_inv={k_inv})")
                 N_i -= len(target_names)
                 continue
-
             for target_name in target_names:
                 if target_name=="RT":
                     target_RCT = CausalMNIST(root='./data',
                             N=args.N,
-                            e=args.e,
+                            e=e_ref,
                             pW=args.pW,
                             pU=args.pU,
                             exp=args.exp,
@@ -89,7 +92,7 @@ def main(args):
                 elif target_name=="RV":
                     target = CausalMNIST(root='./data',
                             N=args.N,
-                            e=args.e,
+                            e=e_ref,
                             pW=args.pW,
                             pU=args.pU,
                             exp=args.exp,
@@ -99,9 +102,9 @@ def main(args):
                 elif target_name=="T3": # difficult (strong OoD, OS)
                     target_RCT = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=2 if args.e==1 else 1,
-                                pW=0.5,
-                                pU=0.5,
+                                e=e_tar,
+                                pW=p_average,
+                                pU=p_average,
                                 exp="RCT",
                                 verbose=False,
                                 seed=seed,
@@ -109,9 +112,9 @@ def main(args):
                     ATE = compute_effect(target_RCT, method="AIPW", pred=False, total=True, econml=False)
                     target = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=2 if args.e==1 else 1,
-                                pW=0.5,
-                                pU=0.5,
+                                e=e_tar,
+                                pW=p_average,
+                                pU=p_average,
                                 exp="OS",
                                 verbose=False,
                                 seed=seed,
@@ -119,9 +122,9 @@ def main(args):
                 elif target_name=="T2": # medium (weak OoD, OS)
                     target_RCT = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=2 if args.e==1 else 1,
-                                pW=0.05,
-                                pU=0.05,
+                                e=e_tar,
+                                pW=p_extreme,
+                                pU=p_extreme,
                                 exp="RCT",
                                 verbose=False,
                                 seed=seed,
@@ -129,9 +132,9 @@ def main(args):
                     ATE = compute_effect(target_RCT, method="AIPW", pred=False, total=True, econml=False)
                     target = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=2 if args.e==1 else 1,
-                                pW=0.05,
-                                pU=0.05,
+                                e=e_tar,
+                                pW=p_extreme,
+                                pU=p_extreme,
                                 exp="OS",
                                 verbose=False,
                                 seed=seed,
@@ -139,9 +142,9 @@ def main(args):
                 elif target_name=="T1": # easy (weak OoD, RCT)
                     target_RCT = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=2 if args.e==1 else 1,
-                                pW=0.05,
-                                pU=0.05,
+                                e=e_tar,
+                                pW=p_extreme,
+                                pU=p_extreme,
                                 exp="RCT",
                                 verbose=False,
                                 seed=seed,

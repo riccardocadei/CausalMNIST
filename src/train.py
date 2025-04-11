@@ -50,7 +50,7 @@ def training(model,
                                         shuffle=True, 
                                         **kwargs)
     B = time.time()
-    if method in ["CURL", "UCRL"]:
+    if method in ["IRM", "vREx"]:
         train_envs = []
         for w in dataset.W.unique():
             for u in dataset.U.unique():
@@ -61,11 +61,8 @@ def training(model,
                     train_env = (dataset.X[mask], dataset.Y[mask])
                     train_envs.append(train_env)
         if verbose: print("Num Env.", len(train_envs))
-    # if method in ["CURL+"]:
-    #     train_envs = []
-    #     for t in dataset.T.unique():
-    #         train_env = (dataset.X[dataset.T == t], dataset.Y[dataset.T == t])
-    #         train_envs.append(train_env)
+    if method=="IRM":
+        scale = torch.tensor(1.).to(model.device).requires_grad_()
     C = time.time()
     if verbose: print(f"Data loading: {B-A:.2f}s")
     if verbose: print(f"Data loading Multi-Env: {C-B:.2f}s")
@@ -77,31 +74,34 @@ def training(model,
             I = time.time()
             X, y = image.to(device).float(), variables[3].to(device).long()
             optimizer.zero_grad()
-            output = model(X)
-            loss = torch.nn.CrossEntropyLoss()(output, y)
-            if method=="DERM":
-                loss = torch.nn.CrossEntropyLoss(reduction='none')(output, y)
-                yvar = variables[4].to(device).float()
-                oprob = variables[5].to(device).float()
-                weight = yvar/oprob
-                loss = (weight*loss).sum()
-            else:
-                loss = torch.nn.CrossEntropyLoss()(output, y)
-            F = time.time()
-            if method in ["CURL", "UCRL"]:
+            if method in ["ERM", "DERM"]:
+                output = model(X)
+                if method=="ERM":
+                    loss = torch.nn.CrossEntropyLoss()(output, y)
+                if method=="DERM":
+                    loss = torch.nn.CrossEntropyLoss(reduction='none')(output, y)
+                    yvar = variables[4].to(device).float()
+                    oprob = variables[5].to(device).float()
+                    weight = yvar/oprob
+                    loss = (weight*loss).sum()
+                F = time.time()
+            if method in ["IRM", "vREx"]:
                 losses = []
                 for train_env in train_envs:
                     idx = torch.randperm(len(train_env[0]))[:batch_size]
-                    X, y =  train_env[0][idx].to(device).float(), train_env[1][idx].to(device).float()
-                    if method=="CURL":
-                        output = model.cond_exp(X)
-                        loss_e = (y-output).mean()
-                    if method=="UCRL":
-                        output = model(X)
-                        loss_e = torch.nn.CrossEntropyLoss()(output, y.long())
+                    X, y =  train_env[0][idx].to(device).float(), train_env[1][idx].to(device).long()
+                    output = model(X)
+                    if method=="IRM":
+                        output = output * scale
+                    loss_e = torch.nn.CrossEntropyLoss()(output, y)
+                    if method=="IRM":
+                        grad = torch.autograd.grad(loss_e, [scale], create_graph=True)[0]
+                        inv_constr = torch.sum(grad ** 2)
+                        loss_e = loss_e + inv_constr * k_inv
                     losses.append(loss_e)
-                loss_var = torch.var(torch.stack(losses))
-                loss += k_inv * loss_var
+                loss = torch.sum(torch.stack(losses))
+                if method=="vREx":
+                    loss = loss + k_inv * torch.var(torch.stack(losses))
             G = time.time()
             loss.backward()
             optimizer.step()
