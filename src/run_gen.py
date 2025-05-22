@@ -20,11 +20,12 @@ warnings.filterwarnings("ignore", category=UserWarning, module="torch")
 def get_parser():
     parser = argparse.ArgumentParser(description='Causal MNIST')
     parser.add_argument('--clip', type=float, default=0, help='Clip propensity')
+    parser.add_argument('--e', type=int, default=1, help='Number of environments')
     parser.add_argument('--pW', type=float, default=0.5, help='Probability of W (observed confounders)')
     parser.add_argument('--pU', type=float, default=0.5, help='Probability of U (unobserved confounders)')
     parser.add_argument('--exp', type=str, default='RCT', help='Experiment type')
     parser.add_argument('--N', type=int, default=10000, help='Number of samples')
-    parser.add_argument('--seeds', type=int, default=3, help='Number of seeds')
+    parser.add_argument('--seeds', type=int, default=50, help='Number of seeds')
     parser.add_argument('--epochs', type=int, default=40, help='Number of epochs')
     return parser
 
@@ -46,7 +47,7 @@ def main(args):
             print(f"Training {int(i/len(target_names)+1)}/{N_i} {t//60:.0f}m{t%60:.0f}s/{T//60:.0f}m{T%60:.0f}s (Method: {method}, K_inv: {k_inv}, Seed: {seed})")
             reference = CausalMNIST(root='./data',
                                 N=args.N,
-                                e=1,
+                                e=args.e,
                                 pW=args.pW,
                                 pU=args.pU,
                                 exp=args.exp,
@@ -75,7 +76,7 @@ def main(args):
                 if target_name=="train":
                     target_RCT = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=args.e,
                             pW=args.pW,
                             pU=args.pU,
                             exp=args.exp,
@@ -87,7 +88,7 @@ def main(args):
                 elif target_name=="ID":
                     target_RCT = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=args.e,
                             pW=args.pW,
                             pU=args.pU,
                             exp=args.exp,
@@ -97,7 +98,7 @@ def main(args):
                     ATE = compute_effect(target_RCT, method="AIPW", pred=False, total=True, econml=False)
                     target = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=args.e,
                             pW=args.pW,
                             pU=args.pU,
                             exp=args.exp,
@@ -258,3 +259,4 @@ def main(args):
 if __name__ == "__main__":
     args = get_parser().parse_args()
     main(args)
+
