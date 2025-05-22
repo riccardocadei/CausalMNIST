@@ -108,7 +108,7 @@ def main(args):
                 elif target_name=="OoD-L-S":
                     target_RCT = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=2,
                             pW=0.05,
                             pU=0.05,
                             exp="RCT",
@@ -118,7 +118,7 @@ def main(args):
                     ATE = compute_effect(target_RCT, method="AIPW", pred=False, total=True, econml=False)
                     target = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=2,
                             pW=0.05,
                             pU=0.05,
                             exp="OS",
@@ -128,7 +128,7 @@ def main(args):
                 elif target_name=="OoD-L-H": 
                     target_RCT = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=2,
                             pW=0.5,
                             pU=0.5,
                             exp="RCT",
@@ -138,7 +138,7 @@ def main(args):
                     ATE = compute_effect(target_RCT, method="AIPW", pred=False, total=True, econml=False)
                     target = CausalMNIST(root='./data',
                             N=args.N,
-                            e=1,
+                            e=2,
                             pW=0.5,
                             pU=0.5,
                             exp="OS",
