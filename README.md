@@ -17,8 +17,8 @@ python ./src/run_gen.py --pW 0.5 --pU 0.02 --exp OS --epochs 40 --seeds 50
 to reproduce the experiments in Table 1, and load them in `results.ipynb` for visualization.
 
 ## Requirements
-Install the required packages using:
+Install the required packages using conda:
 
 ```bash
-pip install -r requirements.txt
+conda env create -f environment.yml
 ```
