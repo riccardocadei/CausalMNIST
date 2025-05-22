@@ -1,22 +1,15 @@
 # CausalMNIST
-New Benchmark for *downstream Treatment Effect Estimation from ML pipelines* 
+Synthetic Benchmark for *Prediction-Powered Treatment Effect Estimation* based on MNIST dataset manipulation.
 
 ## Problem
-See Section 2 of the corresponding paper for a detailed description of the problem.
+Estimating the treatment effect of the pen color to the magnitude of handwritten digits without digit annotation.
 
 ## Data Generating Process
-See Appendix D of the corresponding paper for a detailed description of the data generating process.
+See Appendix C of the corresponding paper for a detailed description of the data generating process.
 
-#### Example
-![Example Image](./results/CausalMNIST/random/example.png)
+## Run
+Run:
 
-## Reference
+`srun python ./src/run_gen.py --pW 0.5 --pU 0.02 --exp OS --epochs 40 --seeds 50`
 
-```bibtex
-@article{cadei2025causal,
-  title={Causal Lifting of Neural Representations: Zero-Shot Generalization for Causal Inferences},
-  author={Cadei, Riccardo and Demirel, Ilker and De Bartolomeis, Piersilvio and Lindorfer, Lukas and Cremer, Sylvia and Schmid, Cordelia and Locatello, Francesco},
-  journal={arXiv preprint arXiv:2502.06343},
-  year={2025}
-}
-```
+to reproduce the experiments in Table 1. 
