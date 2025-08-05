@@ -133,7 +133,7 @@ class CausalMNIST(datasets.VisionDataset):
         Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N) +np.random.randint(4, size=N)*U).astype(int) # ATE=0
       elif e == 3:
         Y = (np.random.randint(4, size=N)*np.logical_or(U, T).astype(int) +np.random.randint(7, size=N)).astype(int) # ATE=...
-        print(np.unique(Y, return_counts=True))
+      #print(np.unique(Y, return_counts=True))
       dataset = []
       for digit in range(10):
           idxs = np.where(Y==digit)[0]
@@ -160,7 +160,6 @@ class CausalMNIST(datasets.VisionDataset):
         Y = (np.random.randint(4, size=N)*W +np.random.randint(4, size=N) +np.random.randint(4, size=N)*U).astype(int) # ATE=0
       elif e == 3:
         Y = (np.random.randint(4, size=N)*np.logical_or(U, T).astype(int) +np.random.randint(7, size=N)).astype(int) # ATE=...
-        print(np.unique(Y, return_counts=True))
       dataset = []
       for digit in range(10):
           idxs = np.where(Y==digit)[0]
@@ -173,10 +172,10 @@ class CausalMNIST(datasets.VisionDataset):
               u = U[idx]
               t = T[idx]
               y = Y[idx]
-              x = color_grayscale_arr(np.array(x), background=w, pen=t, pad=4*u)
+              x = color_grayscale_arr(np.array(x), background=w, pen=t, pad=8*u)
 
               dataset.append((x, (w, u, t, y)))
-
+      
       np.random.shuffle(dataset)
       torch.save(dataset, os.path.join(causal_mnist_dir, str(e), str(pW), str(pU), str(seed), 'OS.pt'))
 
