@@ -9,3 +9,6 @@ runs/
 .DS_Store
 
 stats.ipynb
+
+src/bartpy/
+*.png
